@@ -12,7 +12,7 @@ from flask_cors import CORS
 #IMPORTANT -> BEFORE RUNNING THE CODE YOU HAVE TO BUILD THE VITE PROJECT (npm run build)
 app = Flask(__name__, static_folder='./dist')
 
-CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST"], "allow_headers": ["Content-Type", "Authorization"]}})
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 #endpoint to retrieve the informations relative to the quickscan output
 @app.route("/api/quickscan", methods=["POST"])
@@ -54,6 +54,8 @@ def serve(path):
     else:
         return send_from_directory(app.static_folder, 'index.html')
 
-
+# ensure EB finds WSGI callable named 'application'
+application = app
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)

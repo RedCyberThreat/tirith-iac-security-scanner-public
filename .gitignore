@@ -10,14 +10,12 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
 lib/
 lib64/
 parts/
-sdist/
 var/
 wheels/
 share/python-wheels/
@@ -215,7 +213,6 @@ __marimo__/
 
 # Vite
 # Ignore the build output directory (default is 'dist')
-/dist
 # Ignore Vite's cache and log files
 .vite/
 *.log
@@ -276,7 +273,6 @@ package-lock.json
 pnpm-lock.yaml
 
 # Build output directories
-dist/
 build/
 
 # Typescript build info
@@ -295,3 +291,8 @@ Thumbs.db
 
 # Temporary or non-essential images
 public/*.png
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
