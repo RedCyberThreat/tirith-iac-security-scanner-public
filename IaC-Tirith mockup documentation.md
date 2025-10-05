@@ -7,16 +7,17 @@ All the design focus it purpose to give the feedback of using a powerful tool ma
 ## 1. Design Fundamentals 
 
 Color 
-![[Presentation_Colours.png]] 
 
-![[Presentation_font.png]]
+![Alt text](Presentation_Colours.png)
+
+Font
+
+![Alt text](Presentation_font.png)
 
 ## 2. Design Interface
 
-![[Presentation.png]]
+![Alt text](Presentation.png) 
 
 ## 3. First mockup design
 
-![[Landing.pdf]] 
-
-![[Main.pdf]]
+![Alt text](Main.jpg)
