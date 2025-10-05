@@ -31,9 +31,13 @@
 + **Severity Levels:** Assigns a severity (High, Medium, or Low) to each finding. 
 + **User-Friendly Interface:** Presents scan results in an intuitive web interface for easy understanding and navigation 
 
-3. **Low-Level Design:**
+3.1 **High-Level Design:**
 
-![[Low_Level_Design.png]]
+![Alt text](HDS_IMG.png)
+
+3.2 **Low-Level Design:**
+
+![Alt text](Low_Level_Design.png)
 
 The AWS IaC Security Scanner will operate as a web application. The core components will include:
 **Frontend (Web Application):** A user interface built with Vite with React and Tailwind CSS that allows users to upload CloudFormation templates. It will display the scan results, including identified misconfigurations, their severity, and recommendations.
