@@ -1,14 +1,14 @@
 
-**Project Title:** AWS IaC Security Scanner 
+**Project Title:** AWS IaC Security Scanner
 
 **Team Members:**
-+ Mauro 
-+ Marco 
++ Mauro
++ Marco
 + Matteo
-+ Lorenzo 
-+ Niccolò 
++ Lorenzo
++ Niccolò
 
-**Mentor:** Jelena 
+**Mentor:** Jelena
 **Date:** 5 October 2025
 
 1. **Introduction**
@@ -18,18 +18,18 @@
 **Project Objective:** The project aims to develop a fast, user-friendly, and free, easy to access web-based Minimum Viable Product (MVP) that empowers developers to proactively identify and rectify security misconfigurations in their AWS CloudFormation (JSON) templates before deployment. By providing automated scanning and actionable recommendations, the tool seeks to enhance security posture, enforce best practices, and accelerate secure cloud deployments.
 
 2. **Key Features (MVP)**
-+ **Cloud formation Template Upload:** Allows users to upload their CloudFormation JSON templates for scanning 
++ **Cloud formation Template Upload:** Allows users to upload their CloudFormation JSON templates for scanning
 + **Automated Security Scanning:** Automatically analyzes the uploaded templates against a predefined set of security rules.
-+ **Detection of Misconfigurations:** Identifies common security misconfigurations, as: 
++ **Detection of Misconfigurations:** Identifies common security misconfigurations, as:
 	 - S3 buckets with public access enabled (S3_PUBLIC_ACCESS_BLOCK).
 	 -  S3 buckets with server-side encryption (S3_BUCKET_NO_SERVER_SIDE_ENCRYPTION).
-	 - IAM policies containing * in the Action field (IAM_POLICY_CONTAINS_ASTERISK_ACTION). 
+	 - IAM policies containing * in the Action field (IAM_POLICY_CONTAINS_ASTERISK_ACTION).
 	 - Security Group ingress rules open to the world on sensitive ports (22, 3389) (SECURITY_GROUP_INGRESS_OPEN_TO_WORLD)
-     - RDS DB instances without storage encryption (RDS_INSTANCE_NO_STORAGE_ENCRYPTION) 
+     - RDS DB instances without storage encryption (RDS_INSTANCE_NO_STORAGE_ENCRYPTION)
 
 + **Actionable Remediation Recommendations:** Provides clear, concise recommendations on how to fix identified security issues.
-+ **Severity Levels:** Assigns a severity (High, Medium, or Low) to each finding. 
-+ **User-Friendly Interface:** Presents scan results in an intuitive web interface for easy understanding and navigation 
++ **Severity Levels:** Assigns a severity (High, Medium, or Low) to each finding.
++ **User-Friendly Interface:** Presents scan results in an intuitive web interface for easy understanding and navigation
 
 3.1 **High-Level Design:**
 
@@ -70,7 +70,7 @@ React: A JavaScript library for building user interfaces, enabling a responsive 
 
 **json_source_map:** Libraries for parsing JSON CloudFormation templates in the backend.
 
-**cnf-lint:** Libraries to request 
+**cnf-lint:** Libraries to request
 
 
 **Tools and Services:**
@@ -79,26 +79,3 @@ React: A JavaScript library for building user interfaces, enabling a responsive 
 **Git & GitHub:** For version control, collaborative code development, branching, and pull requests to manage code integration. The main repository will be named iac-security-scanner.
 
 **Affinity Designer 2:** For UI/UX design, creating high-fidelity mockups and visual prototypes of the web application.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
