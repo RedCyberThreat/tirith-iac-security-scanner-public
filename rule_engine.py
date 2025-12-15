@@ -1,79 +1,127 @@
 from utilities import severity_evaluation
-    
-#funcntion to search for threats in the S3 buckets settings
-def s3_check_public_access(list_of_s3_rules, value):
-    #return dict containing the rules that represent a threat
-    dangerous_rules = {}
-    
-    #loop to check each rule againts the json
-    
-    for i in list_of_s3_rules:
-        try:
-            if (value['Properties']['PublicAccessBlockConfiguration'][i]) == False:
-                dangerous_rules[i] = severity_evaluation(i)
-        except KeyError:
-            continue
-    return dangerous_rules
 
-def s3_check_encryption(value):
-    dangerous_rules = {}
-    try:
-        path = value['Properties']['BucketEncryption']['ServerSideEncryptionConfiguration'][0]['ServerSideEncryptionByDefault']['SSEAlgorithm']
-        path_2 = value['Properties']['BucketEncryption']['ServerSideEncryptionConfiguration'][0]['ServerSideEncryptionByDefault']['KMSMasterKeyID']
-    except KeyError:
-        path_2 = False
-        
-    if (path == "AES256"):
-        return dangerous_rules
-    elif (path == 'aws:kms' and path_2):
-        return dangerous_rules        
-    else:
-        dangerous_rules['ServerSideEncryption'] = severity_evaluation('ServerSideEncryptionConfiguration')
-    return dangerous_rules
+def get_nested_values(data,path):
+    """
+    Navigate a nested data structure (dictionary or list) using a list of keys/indexes as the 'path'
+    
+    Args:
+        data (dict|list): the structure of datas to Navigate
+        path(list): list of key (strg) or indexes (strg) that define the path
 
-#function to search for for threats in the SecurityGroup settings
-def ec2_check_securitygroups(list_of_securityGroup_rules, iter, value):
-    #return dict containing the rules that represent a threat
-    dangerous_rules = {}
+    Return:
+        the found value or None if the path doesn't exist
+    """
+    current = data 
     
-    #loop inside the list that contain the securityGroup properties
-    for i in list_of_securityGroup_rules:
-        try:
-            if (value['Properties']['SecurityGroupIngress'][iter][i] in ["22", "3389"]):
-                if (value['Properties']['SecurityGroupIngress'][iter]["CidrIp"] == "0.0.0.0/0"):
-                    dangerous_rules[i] = severity_evaluation(i)
-        except KeyError:
-            continue     
-    
-    return dangerous_rules
+    for key in path:
+        if isinstance(current, list):
+            if not isinstance(key, int):
+                return None
+            try:
+                current = current[key]
+            except IndexError:
+                return None
+
+        elif isinstance(current, dict):
+            current = current.get(key)
+            if current is None:
+                return None
+
+        else:
+            return None
+    return current
 
 
-#fuction to search for threats in the IAM settings
-def iam_check_role(list_of_iam_rules, value):
-    #return dict containing the rules that represent a threat
-    dangerous_rules = {}
-    
-    #loop inside the list that contain the IAM properties
-    for i in list_of_iam_rules:
-        try:
-            if (value['Properties']['AssumeRolePolicyDocument']['Statement'][0][i] == '*' or
-                value['Properties']['Policies'][0]['PolicyDocument']['Statement'][0][i] == '*'):
-                
-                dangerous_rules['Actions'] = severity_evaluation('*')
-        except KeyError:
-            continue
-    
-    return dangerous_rules
+class BaseChecker:
+    def __init__ (self):
+        self.dangerous_rules = { }
 
+    def add_finding(self, rule_name, rule_text=None):
+        text_to_evaluate = rule_text if rule_text else rule_name
+        self.dangerous_rules[rule_name] = severity_evaluation(text_to_evaluate)
 
-#function to search threats in the RDS settings
-def rds_check_dbinstance(list_of_rds_rules, value):
-    #return dict containing the rules that represent a threat
-    dangerous_rules = {}
-    
-    #loop inside the list that contain the RDS properties
-    for i in list_of_rds_rules:
-        if(value['Properties'][i]) == False:
-            dangerous_rules[i] = severity_evaluation(i)
-    
-    return dangerous_rules
+    def get_findings(self):
+        return self.dangerous_rules
+
+class S3Checker(BaseChecker):
+
+    def check_public_access(self, list_of_s3_rules, value):
+
+        path_base = ['Properties', 'PublicAccessBlockConfiguration']
+
+        for rule_name in list_of_s3_rules: 
+            config_value = get_nested_values(value, path_base + [rule_name])
+
+            if config_value is False:
+               self.add_finding(rule_name)
+
+        return self.get_findings()
+
+    def check_encryption(self, value):
+
+        path_list = ['Properties', 'BucketEncryption', 'ServerSideEncryptionConfiguration', 0, 'ServerSideEncryptionByDefault']
+
+        algorithm = get_nested_values(value, path_list + ['SSEAlgorithm'])
+        kms_id = get_nested_values(value, path_list + ['KMSMasterKeyID'])
+
+        is_safe = (algorithm == "AES256") or (algorithm == 'aws:kms' and kms_id)
+
+        if not is_safe:
+
+            self.add_finding('ServerSideEncryption', 'ServerSideEncryptionConfiguration')
+
+        return self.get_findings()
+
+class EC2Checker(BaseChecker):
+
+    dangerous_port = ["22", "3389"]
+
+    def check_securitygroups (self, list_of_securityGroup_rules, iter_index, value):
+
+        for rule_name in list_of_securityGroup_rules:
+            path_cidr = ['Properties', 'SecurityGroupIngress', iter_index, "CidrIP"]
+            path_port = ['Properties', 'SecurityGroupIngress', iter_index, rule_name]
+
+            cidr_ip = get_nested_values(value, path_cidr)
+            port_value = get_nested_values(value, path_port)
+
+            is_public_cdir = cidr_ip == "0.0.0.0/0"
+            is_dangerous_port = str(port_value) in self.dangerous_port
+
+            if is_dangerous_port and is_public_cdir:
+                self.add_finding(rule_name)
+
+        return self.get_findings()
+
+class IAMChecker(BaseChecker):
+
+    def check_role(self, list_of_iam_rules, value):
+
+        for rule_name in list_of_iam_rules:
+
+            path_role = ['Properties', 'AssumeRolePolicyDocument', 'Statement', 0, rule_name]
+            role_value = get_nested_values(value, path_role)
+
+            path_policy = ['Properties', 'Policies', 0, 'PolicyDocument', 'Statement', 0, rule_name]
+            policy_value = get_nested_values(value, path_policy)
+
+            if role_value == '*' or policy_value == '*':
+
+                self.add_finding('Actions', rule_text = '*')
+
+                break
+
+        return self.get_findings()
+
+class RDSChecker(BaseChecker):
+
+    def check_dbinstance(self, list_of_rds_rules, value):
+
+        for rule_name in list_of_rds_rules:
+
+            config_value = get_nested_values(value, ['Properties',rule_name])
+
+            if config_value is False:
+                self.add_finding(rule_name)
+
+        return self.get_findings()
